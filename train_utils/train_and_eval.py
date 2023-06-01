@@ -3,6 +3,7 @@ from torch import nn
 import train_utils.distributed_utils as utils
 
 
+# 损失函数
 def criterion(inputs, target):
     losses = {}
     for name, x in inputs.items():
@@ -15,12 +16,15 @@ def criterion(inputs, target):
     return losses['out'] + 0.5 * losses['aux']
 
 
+# 验证数据并返回混淆矩阵
 def evaluate(model, data_loader, device, num_classes):
     model.eval()
+    # 混淆矩阵
     confmat = utils.ConfusionMatrix(num_classes)
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
     with torch.no_grad():
+        # 把数据包裹在日志里面，直接设置打印
         for image, target in metric_logger.log_every(data_loader, 100, header):
             image, target = image.to(device), target.to(device)
             output = model(image)
@@ -33,8 +37,10 @@ def evaluate(model, data_loader, device, num_classes):
     return confmat
 
 
+# 设置每轮训练以及打印日志 并返回平均损失和学习率
 def train_one_epoch(model, optimizer, data_loader, device, epoch, lr_scheduler, print_freq=10, scaler=None):
     model.train()
+    # 模型训练记录日志
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
     header = 'Epoch: [{}]'.format(epoch)
@@ -54,6 +60,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, lr_scheduler, 
             loss.backward()
             optimizer.step()
 
+        # 更新学习率
         lr_scheduler.step()
 
         lr = optimizer.param_groups[0]["lr"]
@@ -62,6 +69,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, lr_scheduler, 
     return metric_logger.meters["loss"].global_avg, lr
 
 
+# 设置学习率更新策略 先由一个很小的值慢慢增加到所给的学习率，然后再慢慢下降
 def create_lr_scheduler(optimizer,
                         num_step: int,
                         epochs: int,

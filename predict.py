@@ -20,6 +20,7 @@ def main():
     classes = 20
     weights_path = "./save_weights/model_29.pth"
     img_path = "./test.jpg"
+    # 调色板文件
     palette_path = "./palette.json"
     assert os.path.exists(weights_path), f"weights {weights_path} not found."
     assert os.path.exists(img_path), f"image {img_path} not found."
@@ -31,7 +32,7 @@ def main():
             pallette += v
 
     # get devices
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu")
     print("using {} device.".format(device))
 
     # create model

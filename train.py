@@ -167,6 +167,7 @@ def main(args):
                          f"lr: {lr:.6f}\n"
             f.write(train_info + val_info + "\n\n")
 
+        # 保存模型所有参数
         save_file = {"model": model.state_dict(),
                      "optimizer": optimizer.state_dict(),
                      "lr_scheduler": lr_scheduler.state_dict(),
@@ -176,6 +177,7 @@ def main(args):
             save_file["scaler"] = scaler.state_dict()
         torch.save(save_file, "./save_weights/model_{}.pth".format(epoch))
 
+    # 打印总训练时间
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print("training time {}".format(total_time_str))

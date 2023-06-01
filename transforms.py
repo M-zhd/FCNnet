@@ -6,6 +6,7 @@ from torchvision import transforms as T
 from torchvision.transforms import functional as F
 
 
+# 为大小不够的图片设置填充
 def pad_if_smaller(img, size, fill=0):
     # 如果图像最小边长小于给定size，则用数值fill进行padding
     min_size = min(img.size)
@@ -27,6 +28,7 @@ class Compose(object):
         return image, target
 
 
+# 在最小和最大size之间随机选择一个size 对图像和标签进行resize
 class RandomResize(object):
     def __init__(self, min_size, max_size=None):
         self.min_size = min_size
@@ -55,12 +57,14 @@ class RandomHorizontalFlip(object):
         return image, target
 
 
+# 先对小于裁剪尺寸的图片进行填充，然后再随机裁剪
 class RandomCrop(object):
     def __init__(self, size):
         self.size = size
 
     def __call__(self, image, target):
         image = pad_if_smaller(image, self.size)
+        # 对于标签而言255是无效值，在计算损失时会被忽略
         target = pad_if_smaller(target, self.size, fill=255)
         crop_params = T.RandomCrop.get_params(image, (self.size, self.size))
         image = F.crop(image, *crop_params)
